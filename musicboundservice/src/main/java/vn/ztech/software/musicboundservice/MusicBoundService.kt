@@ -3,15 +3,29 @@ package vn.ztech.software.musicboundservice
 import android.app.Service
 import android.content.Intent
 import android.media.MediaPlayer
-import android.os.Binder
-import android.os.IBinder
+import android.os.*
 
 class MusicBoundService : Service() {
     val musicBinder = MusicBinder()
     var mediaPlayer: MediaPlayer? = null
+    lateinit var messenger: Messenger
+    companion object{
+        const val ACTION_PLAY = 0
+    }
     inner class MusicBinder : Binder() {
         fun getService(): Service{
             return this@MusicBoundService
+        }
+    }
+
+    inner class MusicServiceHandler: Handler(){
+        override fun handleMessage(msg: Message) {
+            when(msg.what){
+                ACTION_PLAY->{
+
+                    startMusic(msg.arg1)
+                }
+            }
         }
     }
 
@@ -35,7 +49,8 @@ class MusicBoundService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder {
-        return musicBinder
+        if (!::messenger.isInitialized) messenger = Messenger(MusicServiceHandler())
+        return messenger.binder
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
