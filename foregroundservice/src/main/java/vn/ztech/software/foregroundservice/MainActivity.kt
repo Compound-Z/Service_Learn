@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createChannel(){
         val nm:NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val nc = NotificationChannel("foreground_service_channel", "Foreground service channel", NotificationManager.IMPORTANCE_DEFAULT)
+        val nc = NotificationChannel("foreground_service_channel", "Foreground service channel", NotificationManager.IMPORTANCE_HIGH)
         nc.description = "This is notification for foreground service test app"
         nc.enableLights(true)
         nc.setShowBadge(true)

@@ -36,7 +36,7 @@ class ForegroundService : Service() {
             if (song != null){
                 currSong = song
                 playMusic(song)
-                startForeground(1, getNoti(song?:Song("","",0,0)))
+                startForeground(1, sendNotiMedia(song?:Song("","",0,0)))
             }
         }
 
@@ -66,7 +66,7 @@ class ForegroundService : Service() {
             mediaPlayer?.let {
                 it.start()
                 isPlaying = true
-                startForeground(startId, getNoti(currSong?:Song("","",0,0)))
+                startForeground(startId, sendNotiMedia(currSong?:Song("","",0,0)))
                 sendIntentToActivity(ACTION_PLAY)
             }
         }
@@ -77,7 +77,7 @@ class ForegroundService : Service() {
             mediaPlayer?.let {
                 it.pause()
                 isPlaying = false
-                startForeground(startId, getNoti(currSong?:Song("","",0,0)))
+                startForeground(startId, sendNotiMedia(currSong?:Song("","",0,0)))
                 sendIntentToActivity(ACTION_PAUSE)
             }
         }
@@ -105,27 +105,53 @@ class ForegroundService : Service() {
         return null
     }
 
-    fun getNoti(data: Song): Notification {
+//    fun getNoti(data: Song): Notification {
+//        val intent = Intent(this, MainActivity::class.java)
+//        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+//
+//        val remoteView = RemoteViews(packageName, R.layout.layout_noti)
+//        remoteView.setTextViewText(R.id.tvName, data.name)
+//        remoteView.setTextViewText(R.id.tvSinger, data.single)
+//
+//        val imgBitmap = BitmapFactory.decodeResource(resources, R.drawable.tenet)
+//        remoteView.setImageViewBitmap(R.id.ivSong, imgBitmap)
+//
+//        if (isPlaying)remoteView.setImageViewResource(R.id.btPlayOrPause, R.drawable.ic_baseline_pause_circle_filled_24)
+//        else remoteView.setImageViewResource(R.id.btPlayOrPause, R.drawable.ic_baseline_play_circle_filled_24)
+//
+//        remoteView.setOnClickPendingIntent(R.id.btCancel, getPendingIntent(ACTION_CANCEL))
+//        remoteView.setOnClickPendingIntent(R.id.btPlayOrPause, if (isPlaying) getPendingIntent(ACTION_PAUSE) else getPendingIntent(ACTION_PLAY))
+//        return NotificationCompat.Builder(applicationContext,"foreground_service_channel")
+//            .setSmallIcon(R.mipmap.ic_launcher)
+//            .setOngoing(true)
+//            .setChannelId("foreground_service_channel")
+//            .setCustomContentView(remoteView)
+//            .setContentIntent(pendingIntent)
+//            .setSound(null)
+//            .build()
+//    }
+
+    fun sendNotiMedia(data: Song): Notification {
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val remoteView = RemoteViews(packageName, R.layout.layout_noti)
-        remoteView.setTextViewText(R.id.tvName, data.name)
-        remoteView.setTextViewText(R.id.tvSinger, data.single)
-
         val imgBitmap = BitmapFactory.decodeResource(resources, R.drawable.tenet)
-        remoteView.setImageViewBitmap(R.id.ivSong, imgBitmap)
+        val overrideLargeIcon = BitmapFactory.decodeResource(resources, R.drawable.tenet2)
 
-        if (isPlaying)remoteView.setImageViewResource(R.id.btPlayOrPause, R.drawable.ic_baseline_pause_circle_filled_24)
-        else remoteView.setImageViewResource(R.id.btPlayOrPause, R.drawable.ic_baseline_play_circle_filled_24)
-
-        remoteView.setOnClickPendingIntent(R.id.btCancel, getPendingIntent(ACTION_CANCEL))
-        remoteView.setOnClickPendingIntent(R.id.btPlayOrPause, if (isPlaying) getPendingIntent(ACTION_PAUSE) else getPendingIntent(ACTION_PLAY))
         return NotificationCompat.Builder(applicationContext,"foreground_service_channel")
             .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(data.name)
+            .setContentText(data.single)
+            .setLargeIcon(imgBitmap)
+            .addAction(if (isPlaying) R.drawable.ic_baseline_pause_circle_filled_24 else R.drawable.ic_baseline_play_circle_filled_24,
+                        if (isPlaying) "Pause" else "Play",
+                        if (isPlaying) getPendingIntent(ACTION_PAUSE) else getPendingIntent(ACTION_PLAY))
+            .addAction(R.drawable.ic_baseline_cancel_24, "Cancel", getPendingIntent(ACTION_CANCEL))
             .setOngoing(true)
+            .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
+                .setShowActionsInCompactView(1))
+            .setStyle(NotificationCompat.BigPictureStyle().bigPicture(imgBitmap).setBigContentTitle("BIG CONTENT").bigLargeIcon(overrideLargeIcon))
             .setChannelId("foreground_service_channel")
-            .setCustomContentView(remoteView)
             .setContentIntent(pendingIntent)
             .setSound(null)
             .build()
